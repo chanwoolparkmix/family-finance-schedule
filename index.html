@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>가족금융일정표</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#F3F4F6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="금융일정표">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F3F4F6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;-webkit-text-size-adjust:100%}
+body{padding-top:env(safe-area-inset-top);padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+button,input,select{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer}
+.app{max-width:520px;margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}
+header.top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.iconbtn{width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center}
+.banner{margin:8px 20px 0;padding:12px 14px;border-radius:12px;background:#FEF3C7;color:#78350F;font-size:13px;line-height:1.5}
+.banner b{display:block;margin-bottom:2px}
+.summary{margin:8px 20px 0;padding:18px 20px;background:#111827;color:#fff;border-radius:16px;display:flex;gap:20px;justify-content:space-between}
+.summary small{display:block;font-size:12px;color:#D1D5DB;margin-bottom:4px}
+.summary .big{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.summary .mid{font-size:15px;font-weight:500;padding-top:6px;font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:8px;padding:16px 20px 0;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:44px;padding:0 16px;border-radius:22px;border:1px solid #D1D5DB;background:#fff;font-size:14px;white-space:nowrap}
+.chip[aria-pressed=true]{background:#1D4ED8;border-color:#1D4ED8;color:#fff;font-weight:500}
+.sortbar{display:flex;align-items:center;justify-content:space-between;padding:8px 20px 4px;gap:8px}
+.sortbar .cnt{font-size:13px;color:#374151}
+.sortbar .ctl{display:flex;align-items:center;gap:4px}
+.sortbar select{height:44px;border:0;background:transparent;font-size:14px;font-weight:500;padding:0 4px}
+.dirbtn{width:44px;height:44px;border:0;background:transparent;font-size:18px;font-weight:700}
+.list{display:flex;flex-direction:column;gap:12px;padding:0 20px}
+.card{background:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card .head{display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;text-align:left;width:100%}
+.card h2{margin:0;font-size:16px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12px;color:#374151;background:#F3F4F6;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.dbadge{margin-left:auto;font-size:13px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap}
+.d0,.d1{background:#FED7AA;color:#7C2D12}.d3{background:#FEF3C7;color:#78350F}.d7{background:#DBEAFE;color:#1E3A8A}.dn{background:#F3F4F6;color:#374151}
+.amt{display:flex;align-items:baseline;gap:8px}
+.amt b{font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.amt span{font-size:13px;color:#4B5563}
+.meta{font-size:13px;color:#4B5563;line-height:1.6;font-variant-numeric:tabular-nums}
+.acct{display:flex;align-items:center;gap:8px;background:#F3F4F6;border-radius:10px;padding:0 4px 0 12px;min-height:44px}
+.acct span{flex:1;font-size:14px;font-variant-numeric:tabular-nums;word-break:break-all}
+.copy{height:36px;padding:0 12px;border:0;border-radius:8px;background:#fff;color:#1D4ED8;font-size:13px;font-weight:700;white-space:nowrap}
+.empty{margin:40px 20px;text-align:center;color:#4B5563;font-size:14px;line-height:1.7}
+.fab{position:fixed;right:max(20px,calc(50% - 240px));bottom:calc(24px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:28px;border:0;background:#1D4ED8;color:#fff;font-size:30px;line-height:1;box-shadow:0 6px 16px rgba(29,78,216,.35)}
+.overlay{position:fixed;inset:0;background:rgba(17,24,39,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.overlay.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:8px 20px calc(24px + env(safe-area-inset-bottom))}
+.grab{width:40px;height:4px;border-radius:2px;background:#D1D5DB;margin:4px auto 8px}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.shead h3{margin:0;font-size:18px}
+.txt{border:0;background:transparent;height:44px;padding:0 8px;font-size:15px;color:#374151}
+.txt.danger{color:#B91C1C}
+.f{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;min-width:0}
+.f label{font-size:13px;font-weight:500;color:#374151}
+.f input,.f select{height:48px;border:1px solid #9CA3AF;border-radius:10px;padding:0 12px;background:#fff;width:100%}
+.row{display:flex;gap:12px}.row>.f{flex:1}
+.hint{margin:-8px 0 14px;font-size:12px;color:#4B5563}
+.primary{width:100%;height:52px;border:0;border-radius:12px;background:#1D4ED8;color:#fff;font-size:16px;font-weight:700}
+.second{width:100%;height:48px;border:1px solid #9CA3AF;border-radius:12px;background:#fff;font-size:15px;font-weight:500}
+.dark{width:100%;height:48px;border:0;border-radius:12px;background:#111827;color:#fff;font-size:15px;font-weight:700}
+.sec{margin:20px 0 8px;font-size:13px;font-weight:500;color:#374151}
+.box{background:#F3F4F6;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.tgl{display:flex;align-items:center;justify-content:space-between;min-height:44px;font-size:16px}
+.sw{width:52px;height:32px;border-radius:16px;border:0;background:#9CA3AF;padding:3px;display:flex;justify-content:flex-start}
+.sw[aria-pressed=true]{background:#1D4ED8;justify-content:flex-end}
+.sw i{width:26px;height:26px;border-radius:13px;background:#fff;display:block}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{height:44px;padding:0 14px;border-radius:22px;border:1px solid #9CA3AF;background:#fff;font-size:14px;display:inline-flex;align-items:center;gap:2px}
+.pill[aria-pressed=true]{background:#1D4ED8;border-color:#1D4ED8;color:#fff;font-weight:500}
+.pill.tagp{background:#fff;border-color:#E5E7EB;padding-right:4px}
+.pill.tagp button{width:36px;height:36px;border:0;background:transparent;color:#4B5563;font-size:16px}
+.add{display:flex;gap:8px}.add input{flex:1;height:44px;border:1px dashed #6B7280;border-radius:22px;padding:0 14px;background:#fff;min-width:0}
+.add button{height:44px;padding:0 16px;border:0;border-radius:22px;background:#1D4ED8;color:#fff;font-weight:700;font-size:14px}
+.note{font-size:12px;color:#4B5563;line-height:1.6;margin:0}
+.big-amt{font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:4px 0 0}
+.acct-big{background:#F3F4F6;border-radius:14px;padding:16px;margin:16px 0}
+.acct-big small{display:block;font-size:12px;color:#4B5563}
+.acct-big b{font-size:22px;font-variant-numeric:tabular-nums;word-break:break-all}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#111827;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>가족금융일정표</h1>
+    <button class="iconbtn" id="btnSettings" aria-label="설정">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </header>
+  <div id="banners"></div>
+  <section class="summary" id="summary"></section>
+  <div class="chips" id="chips"></div>
+  <div class="sortbar">
+    <span class="cnt" id="cnt"></span>
+    <span class="ctl">
+      <select id="sortKey" aria-label="정렬 기준">
+        <option value="due">납입일 가까운 순</option>
+        <option value="balance">대출잔액</option>
+        <option value="rate">이율</option>
+        <option value="payment">월납입금</option>
+        <option value="maturity">만기일</option>
+        <option value="name">이름</option>
+      </select>
+      <button class="dirbtn" id="sortDir" aria-label="오름차순/내림차순 전환">↑</button>
+    </span>
+  </div>
+  <main class="list" id="list"></main>
+</div>
+<button class="fab" id="btnAdd" aria-label="대출 추가">+</button>
+<div class="toast" id="toast" role="status"></div>
+
+<div class="overlay" id="ovForm"><div class="sheet" role="dialog" aria-modal="true" aria-label="대출 편집"><div class="grab"></div>
+  <div class="shead"><button class="txt" data-close>취소</button><h3 id="formTitle">대출 추가</h3><button class="txt danger" id="btnDelete">삭제</button></div>
+  <form id="form" autocomplete="off">
+    <div class="f"><label for="fName">대출이름</label><input id="fName" required maxlength="40"></div>
+    <div class="row"><div class="f"><label for="fType">대출종류</label><select id="fType"></select></div>
+    <div class="f"><label for="fMethod">상환방법</label><select id="fMethod"></select></div></div>
+    <div class="row"><div class="f"><label for="fRate">이율 (연 %)</label><input id="fRate" inputmode="decimal"></div>
+    <div class="f"><label for="fDay">납입일 (매월)</label><select id="fDay"></select></div></div>
+    <div class="row"><div class="f"><label for="fStart">약정일</label><input id="fStart" type="date"></div>
+    <div class="f"><label for="fEnd">만기일</label><input id="fEnd" type="date"></div></div>
+    <div class="row"><div class="f" style="flex:3"><label for="fBal">대출잔액 (원)</label><input id="fBal" inputmode="numeric"></div>
+    <div class="f" style="flex:2"><label for="fBalDate">기준일</label><input id="fBalDate" type="date"></div></div>
+    <p class="hint">잔액을 고치면 기준일이 오늘로 바뀝니다.</p>
+    <div class="f"><label for="fPay">월납입금 (원, 어림값)</label><input id="fPay" inputmode="numeric"></div>
+    <div class="row"><div class="f" style="flex:2"><label for="fBank">이체 은행</label><input id="fBank" maxlength="20"></div>
+    <div class="f" style="flex:3"><label for="fAcct">계좌번호</label><input id="fAcct" inputmode="numeric" maxlength="30"></div></div>
+    <button class="primary" type="submit">저장</button>
+  </form>
+</div></div>
+
+<div class="overlay" id="ovSettings"><div class="sheet" role="dialog" aria-modal="true" aria-label="설정"><div class="grab"></div>
+  <div class="shead"><span style="width:60px"></span><h3>설정</h3><button class="txt" data-close>닫기</button></div>
+  <div id="iosGuide"></div>
+  <div class="sec">납입 알림</div>
+  <div class="box">
+    <div class="tgl"><span>휴대폰 알림 받기</span><button class="sw" id="swNotify" aria-pressed="false" aria-label="휴대폰 알림 받기"><i></i></button></div>
+    <div><div style="font-size:14px;color:#374151;margin-bottom:8px">알림 시점 (납입일 기준)</div><div class="pills" id="offsetPills"></div></div>
+    <div class="tgl"><span>알림 시각</span><select id="selHour" style="height:44px;border:0;border-radius:10px;background:#fff;padding:0 12px"></select></div>
+    <button class="second" id="btnTest">테스트 알림 보내기</button>
+    <p class="note" id="notifyStatus"></p>
+  </div>
+  <div class="sec">대출종류</div>
+  <div class="box"><div class="pills" id="typePills"></div><div class="add"><input id="newType" placeholder="새 종류 (예: 주택담보)" maxlength="12"><button id="addType">추가</button></div></div>
+  <div class="sec">상환방법</div>
+  <div class="box"><div class="pills" id="methodPills"></div><div class="add"><input id="newMethod" placeholder="새 상환방법" maxlength="14"><button id="addMethod">추가</button></div></div>
+  <div class="sec">백업</div>
+  <div class="box">
+    <p class="note">기록은 이 휴대폰 브라우저에만 저장됩니다. 브라우저 데이터를 지우면 사라지니 백업 파일을 받아 두세요.</p>
+    <button class="dark" id="btnExport">백업 파일 저장 (.json)</button>
+    <button class="second" id="btnImport">백업 파일에서 복원</button>
+    <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    <span class="note" id="backupInfo"></span>
+  </div>
+  <p class="note" style="margin-top:16px">알림을 켜면 대출이름·월납입금·납입일·이체계좌가 알림 발송을 위해 서버(Supabase)에도 저장됩니다. 알림을 끄면 서버에서 삭제됩니다.</p>
+</div></div>
+
+<div class="overlay" id="ovAlert"><div class="sheet" role="dialog" aria-modal="true" aria-label="납입 알림"><div class="grab"></div><div id="alertBody"></div></div></div>
+
+<script>
+(function(){
+'use strict';
+var API='https://bhvbobmbpwspziebdxfs.supabase.co/functions/v1/fs-push';
+var LS='fs.v1';
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uuid(){if(crypto.randomUUID)return crypto.randomUUID();return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}
+
+var S=load();
+function defaults(){return{deviceId:uuid(),loans:[],types:['카드론','현금서비스','마이너스통장','신용대출'],methods:['원리금균등','원금균등','만기일시상환'],notify:{enabled:false,offsets:[7,3,1],hour:9},lastBackup:null,sort:{key:'due',dir:'asc'},filter:'전체'}}
+function load(){var d=defaults();try{var raw=localStorage.getItem(LS);if(raw){var o=JSON.parse(raw);for(var k in o)d[k]=o[k];d.notify=Object.assign(defaults().notify,o.notify||{})}}catch(e){}return d}
+var storeFailed=false;
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){if(!storeFailed){storeFailed=true;toast('저장 공간을 쓸 수 없습니다. 백업을 받아 두세요.')}}}
+
+/* ---------- 날짜/금액 ---------- */
+function pad(n){return String(n).padStart(2,'0')}
+function todayObj(){var d=new Date();return{y:d.getFullYear(),m:d.getMonth()+1,d:d.getDate()}}
+function isoToday(){var t=todayObj();return t.y+'-'+pad(t.m)+'-'+pad(t.d)}
+function lastDay(y,m){return new Date(Date.UTC(y,m,0)).getUTCDate()}
+function nextDue(today,day){var y=today.y,m=today.m,d=Math.min(day,lastDay(y,m));if(d<today.d){m++;if(m>12){m=1;y++}d=Math.min(day,lastDay(y,m))}return{y:y,m:m,d:d}}
+function diffDays(a,b){return Math.round((Date.UTC(b.y,b.m-1,b.d)-Date.UTC(a.y,a.m-1,a.d))/86400000)}
+function dueInfo(l){var t=todayObj();var due=nextDue(t,l.day||1);return{due:due,diff:diffDays(t,due)}}
+function won(n){return(Number(n)||0).toLocaleString('ko-KR')+'원'}
+function num(s){var n=parseInt(String(s).replace(/[^0-9]/g,''),10);return isNaN(n)?0:n}
+function fmtNum(s){var n=num(s);return n?n.toLocaleString('ko-KR'):''}
+function md(iso){if(!iso)return'';var p=iso.split('-');return Number(p[1])+'/'+Number(p[2])}
+function ymd(iso){return iso?iso.replace(/-/g,'.'):'-'}
+
+/* ---------- 토스트/복사 ---------- */
+var toastT;function toast(msg){var t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on')},2200)}
+function copyText(text,label){
+  function done(){toast((label||'복사')+' 복사됨')}
+  function fallback(){var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();ta.setSelectionRange(0,text.length);var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(ta);ok?done():toast('복사하지 못했습니다')}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback)}else fallback()
+}
+
+/* ---------- 목록 ---------- */
+function badge(diff){var c=diff<=1?'d'+diff:diff<=3?'d3':diff<=7?'d7':'dn';var t=diff===0?'오늘':diff===1?'내일':'D-'+diff;return'<span class="dbadge '+c+'">'+t+'</span>'}
+function sortedLoans(){
+  var f=S.filter;var arr=S.loans.filter(function(l){return f==='전체'||l.type===f});
+  var k=S.sort.key,dir=S.sort.dir==='asc'?1:-1;
+  function val(l){switch(k){case'due':return dueInfo(l).diff;case'balance':return l.balance||0;case'rate':return l.rate||0;case'payment':return l.payment||0;case'maturity':return l.end?Date.parse(l.end):Infinity;case'name':return l.name||''}}
+  arr.sort(function(a,b){var x=val(a),y=val(b);var r=typeof x==='string'?x.localeCompare(y,'ko'):(x===y?0:(x<y?-1:1));if(r===0)r=(a.name||'').localeCompare(b.name||'','ko');return r*dir});
+  return arr
+}
+function render(){
+  var t=todayObj();
+  var remain=0,total=0;
+  S.loans.forEach(function(l){total+=l.balance||0;var d=nextDue(t,l.day||1);if(d.m===t.m)remain+=l.payment||0});
+  $('summary').innerHTML='<div><small>이번 달 남은 납입</small><div class="big">'+won(remain)+'</div></div><div style="text-align:right"><small>총 대출잔액 · '+S.loans.length+'건</small><div class="mid">'+won(total)+'</div></div>';
+  var types=['전체'].concat(S.types);S.loans.forEach(function(l){if(l.type&&types.indexOf(l.type)<0)types.push(l.type)});
+  if(types.indexOf(S.filter)<0)S.filter='전체';
+  $('chips').innerHTML=types.map(function(x){return'<button class="chip" data-filter="'+esc(x)+'" aria-pressed="'+(S.filter===x)+'">'+esc(x)+'</button>'}).join('');
+  $('sortKey').value=S.sort.key;$('sortDir').textContent=S.sort.dir==='asc'?'↑':'↓';
+  var arr=sortedLoans();$('cnt').textContent=arr.length+'건';
+  if(!S.loans.length){$('list').innerHTML='<div class="empty">아직 등록된 대출이 없습니다.<br>오른쪽 아래 + 버튼으로 추가해 보세요.</div>';renderBanners();return}
+  $('list').innerHTML=arr.map(function(l){
+    var i=dueInfo(l);
+    var meta=[];
+    meta.push('잔액 '+won(l.balance)+(l.balDate?' ('+md(l.balDate)+' 기준)':''));
+    var m2=[];if(l.rate!=null&&l.rate!=='')m2.push('연 '+l.rate+'%');if(l.method)m2.push(l.method);if(l.end)m2.push('만기 '+ymd(l.end));
+    return'<article class="card"><button class="head" data-edit="'+esc(l.id)+'"><h2>'+esc(l.name)+'</h2>'+(l.type?'<span class="tag">'+esc(l.type)+'</span>':'')+badge(i.diff)+'</button>'
+      +'<div class="amt"><b>'+won(l.payment)+'</b><span>매월 '+(l.day===31?'말일':l.day+'일')+'</span></div>'
+      +'<div class="meta">'+esc(meta[0])+(m2.length?'<br>'+esc(m2.join(' · ')):'')+'</div>'
+      +(l.account?'<div class="acct"><span>'+esc([l.bank,l.account].filter(Boolean).join(' '))+'</span><button class="copy" data-copy="'+esc(l.id)+'">복사</button></div>':'')
+      +'</article>'
+  }).join('');
+  renderBanners();
+}
+
+/* ---------- 시트 열기/닫기 ---------- */
+function open(id){$(id).classList.add('on')}
+function close(id){$(id).classList.remove('on')}
+document.querySelectorAll('.overlay').forEach(function(ov){ov.addEventListener('click',function(e){if(e.target===ov||e.target.hasAttribute('data-close'))ov.classList.remove('on')})});
+
+/* ---------- 폼 ---------- */
+var editingId=null,origBalance=0;
+function fillSelects(){
+  $('fType').innerHTML=S.types.map(function(x){return'<option>'+esc(x)+'</option>'}).join('');
+  $('fMethod').innerHTML=S.methods.map(function(x){return'<option>'+esc(x)+'</option>'}).join('');
+  var o='';for(var i=1;i<=31;i++)o+='<option value="'+i+'">'+(i===31?'31일 (말일)':i+'일')+'</option>';$('fDay').innerHTML=o;
+}
+function openForm(id){
+  fillSelects();editingId=id||null;
+  var l=id?S.loans.filter(function(x){return x.id===id})[0]:null;
+  $('formTitle').textContent=l?'대출 편집':'대출 추가';$('btnDelete').style.visibility=l?'visible':'hidden';
+  function ensure(sel,v){if(v&&![].some.call($(sel).options,function(o){return o.value===v||o.text===v})){var op=document.createElement('option');op.text=v;$(sel).add(op)}}
+  if(l){ensure('fType',l.type);ensure('fMethod',l.method)}
+  $('fName').value=l?l.name:'';$('fType').value=l?l.type:(S.types[0]||'');$('fMethod').value=l?l.method:(S.methods[0]||'');
+  $('fRate').value=l&&l.rate!=null?l.rate:'';$('fDay').value=l?l.day:'25';
+  $('fStart').value=l?l.start||'':'';$('fEnd').value=l?l.end||'':'';
+  origBalance=l?l.balance||0:0;
+  $('fBal').value=l&&l.balance?l.balance.toLocaleString('ko-KR'):'';$('fBalDate').value=l?l.balDate||'':isoToday();
+  $('fPay').value=l&&l.payment?l.payment.toLocaleString('ko-KR'):'';$('fBank').value=l?l.bank||'':'';$('fAcct').value=l?l.account||'':'';
+  open('ovForm');
+}
+['fBal','fPay'].forEach(function(id){$(id).addEventListener('input',function(){var p=this.selectionStart,len=this.value.length;this.value=fmtNum(this.value)})});
+$('fBal').addEventListener('input',function(){if(num(this.value)!==origBalance)$('fBalDate').value=isoToday()});
+$('form').addEventListener('submit',function(e){
+  e.preventDefault();
+  var rate=$('fRate').value.trim().replace(',','.');
+  if(rate!==''&&isNaN(parseFloat(rate))){toast('이율을 숫자로 입력해 주세요');return}
+  var obj={id:editingId||uuid(),name:$('fName').value.trim(),type:$('fType').value,method:$('fMethod').value,rate:rate===''?null:parseFloat(rate),day:parseInt($('fDay').value,10),start:$('fStart').value,end:$('fEnd').value,balance:num($('fBal').value),balDate:$('fBalDate').value,payment:num($('fPay').value),bank:$('fBank').value.trim(),account:$('fAcct').value.trim()};
+  if(!obj.name){toast('대출이름을 입력해 주세요');return}
+  if(editingId){S.loans=S.loans.map(function(x){return x.id===editingId?obj:x})}else S.loans.push(obj);
+  save();close('ovForm');render();scheduleSync();
+});
+$('btnDelete').addEventListener('click',function(){
+  if(!editingId||!confirm('이 대출을 삭제할까요?'))return;
+  S.loans=S.loans.filter(function(x){return x.id!==editingId});save();close('ovForm');render();scheduleSync();
+});
+
+/* ---------- 목록 이벤트 ---------- */
+$('list').addEventListener('click',function(e){
+  var c=e.target.closest('[data-copy]');
+  if(c){var l=S.loans.filter(function(x){return x.id===c.getAttribute('data-copy')})[0];if(l)copyText(l.account,'계좌번호');return}
+  var h=e.target.closest('[data-edit]');if(h)openForm(h.getAttribute('data-edit'));
+});
+$('chips').addEventListener('click',function(e){var b=e.target.closest('[data-filter]');if(!b)return;S.filter=b.getAttribute('data-filter');save();render()});
+$('sortKey').addEventListener('change',function(){S.sort.key=this.value;save();render()});
+$('sortDir').addEventListener('click',function(){S.sort.dir=S.sort.dir==='asc'?'desc':'asc';save();render()});
+$('btnAdd').addEventListener('click',function(){openForm()});
+
+/* ---------- 알림 화면(알림 탭 시) ---------- */
+function showAlert(loanId,diffHint){
+  var l=S.loans.filter(function(x){return x.id===loanId})[0];
+  if(!l){toast('해당 대출을 찾지 못했습니다');return}
+  var i=dueInfo(l);var when=i.diff===0?'오늘 납입':i.diff===1?'내일 납입':i.diff+'일 뒤 납입';
+  var cls=i.diff<=1?'d'+i.diff:i.diff<=3?'d3':i.diff<=7?'d7':'dn';
+  $('alertBody').innerHTML='<div style="display:flex;align-items:center;gap:8px;margin-top:12px"><span class="dbadge '+cls+'" style="margin:0">'+when+'</span><span class="meta">'+i.due.m+'월 '+i.due.d+'일</span></div>'
+    +'<h3 style="margin:12px 0 0;font-size:20px">'+esc(l.name)+'</h3><p class="big-amt">'+won(l.payment)+'</p>'
+    +(l.account?'<div class="acct-big"><small>원리금 이체계좌'+(l.bank?' · '+esc(l.bank):'')+'</small><b>'+esc(l.account)+'</b></div><button class="primary" id="aCopy">계좌번호 복사</button>':'<p class="note" style="margin:16px 0">등록된 이체계좌가 없습니다.</p>')
+    +(l.payment?'<button class="second" id="aAmt" style="margin-top:8px">금액 복사 ('+l.payment+')</button>':'')
+    +'<button class="txt" id="aClose" style="width:100%;margin-top:8px">닫기</button>';
+  open('ovAlert');
+  if($('aCopy'))$('aCopy').onclick=function(){copyText(l.account,'계좌번호')};
+  if($('aAmt'))$('aAmt').onclick=function(){copyText(String(l.payment),'금액')};
+  $('aClose').onclick=function(){close('ovAlert')};
+}
+
+/* ---------- 설정 ---------- */
+function isIOS(){return/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+function isStandalone(){return window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)}
+function pushSupported(){return'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window}
+function renderSettings(){
+  var g='';
+  if(isIOS()&&!isStandalone())g='<div class="banner"><b>먼저 홈 화면에 추가해 주세요</b>아이폰은 홈 화면에 설치한 앱에서만 알림을 받을 수 있습니다. 사파리 하단의 공유 버튼 → "홈 화면에 추가"를 누른 뒤, 생긴 아이콘으로 다시 열어 주세요.</div>';
+  else if(!pushSupported())g='<div class="banner"><b>이 브라우저는 알림을 지원하지 않습니다</b>아이폰은 iOS 16.4 이상이 필요합니다.</div>';
+  $('iosGuide').innerHTML=g;
+  $('swNotify').setAttribute('aria-pressed',S.notify.enabled);
+  var all=[7,3,1,0].concat(S.notify.offsets.filter(function(n){return[7,3,1,0].indexOf(n)<0})).sort(function(a,b){return b-a});
+  $('offsetPills').innerHTML=all.map(function(n){return'<button class="pill" data-off="'+n+'" aria-pressed="'+(S.notify.offsets.indexOf(n)>=0)+'">'+(n===0?'당일':n+'일 전')+'</button>'}).join('')+'<button class="pill" id="offCustom" style="border-style:dashed;color:#1D4ED8">+ 직접 추가</button>';
+  var h='';for(var i=0;i<24;i++)h+='<option value="'+i+'">'+(i<12?'오전 ':'오후 ')+(i%12===0?12:i%12)+':00</option>';$('selHour').innerHTML=h;$('selHour').value=S.notify.hour;
+  $('typePills').innerHTML=S.types.map(function(x){return'<span class="pill tagp">'+esc(x)+'<button data-deltype="'+esc(x)+'" aria-label="'+esc(x)+' 삭제">×</button></span>'}).join('');
+  $('methodPills').innerHTML=S.methods.map(function(x){return'<span class="pill tagp">'+esc(x)+'<button data-delmethod="'+esc(x)+'" aria-label="'+esc(x)+' 삭제">×</button></span>'}).join('');
+  $('backupInfo').textContent=S.lastBackup?'마지막 백업 '+md(S.lastBackup.slice(0,10)):'아직 백업한 적이 없습니다.';
+  $('notifyStatus').textContent=syncMsg;
+}
+var syncMsg='';
+$('btnSettings').addEventListener('click',function(){renderSettings();open('ovSettings')});
+$('offsetPills').addEventListener('click',function(e){
+  if(e.target.id==='offCustom'){var v=prompt('며칠 전에 알릴까요? (0~60)','5');if(v==null)return;var n=parseInt(v,10);if(isNaN(n)||n<0||n>60){toast('0~60 사이 숫자를 입력해 주세요');return}if(S.notify.offsets.indexOf(n)<0)S.notify.offsets.push(n);save();renderSettings();scheduleSync();return}
+  var b=e.target.closest('[data-off]');if(!b)return;var n=Number(b.getAttribute('data-off'));var i=S.notify.offsets.indexOf(n);if(i>=0)S.notify.offsets.splice(i,1);else S.notify.offsets.push(n);S.notify.offsets.sort(function(a,b){return b-a});save();renderSettings();scheduleSync();
+});
+$('selHour').addEventListener('change',function(){S.notify.hour=Number(this.value);save();scheduleSync()});
+function addTo(list,inputId,max){var v=$(inputId).value.trim();if(!v)return;if(S[list].indexOf(v)>=0){toast('이미 있습니다');return}S[list].push(v);$(inputId).value='';save();renderSettings();render()}
+$('addType').addEventListener('click',function(){addTo('types','newType')});
+$('addMethod').addEventListener('click',function(){addTo('methods','newMethod')});
+$('typePills').addEventListener('click',function(e){var b=e.target.closest('[data-deltype]');if(!b)return;var v=b.getAttribute('data-deltype');if(S.loans.some(function(l){return l.type===v})){toast('이 종류를 쓰는 대출이 있어 삭제할 수 없습니다');return}S.types=S.types.filter(function(x){return x!==v});save();renderSettings();render()});
+$('methodPills').addEventListener('click',function(e){var b=e.target.closest('[data-delmethod]');if(!b)return;var v=b.getAttribute('data-delmethod');if(S.loans.some(function(l){return l.method===v})){toast('이 방법을 쓰는 대출이 있어 삭제할 수 없습니다');return}S.methods=S.methods.filter(function(x){return x!==v});save();renderSettings()});
+
+/* ---------- 백업/복원 ---------- */
+$('btnExport').addEventListener('click',function(){
+  var payload={app:'family-finance-schedule',version:1,exportedAt:new Date().toISOString(),data:{loans:S.loans,types:S.types,methods:S.methods,notify:S.notify}};
+  var name='가족금융일정표_'+isoToday()+'.json';
+  var file=new File([JSON.stringify(payload,null,2)],name,{type:'application/json'});
+  function mark(){S.lastBackup=new Date().toISOString();save();renderSettings();render()}
+  if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).then(mark,function(err){if(err&&err.name!=='AbortError')dl()})}else dl();
+  function dl(){var a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);mark();toast('백업 파일을 저장했습니다')}
+});
+$('btnImport').addEventListener('click',function(){$('fileImport').click()});
+$('fileImport').addEventListener('change',function(){
+  var f=this.files[0];this.value='';if(!f)return;
+  var r=new FileReader();r.onload=function(){
+    try{
+      var o=JSON.parse(r.result);var d=o&&o.app==='family-finance-schedule'?o.data:null;
+      if(!d||!Array.isArray(d.loans))throw 0;
+      if(!confirm('백업 파일의 대출 '+d.loans.length+'건으로 현재 기록을 모두 바꿀까요?'))return;
+      S.loans=d.loans;if(Array.isArray(d.types))S.types=d.types;if(Array.isArray(d.methods))S.methods=d.methods;
+      if(d.notify&&Array.isArray(d.notify.offsets)){S.notify.offsets=d.notify.offsets;S.notify.hour=d.notify.hour|0}
+      save();render();renderSettings();scheduleSync();toast('복원했습니다')
+    }catch(e){toast('올바른 백업 파일이 아닙니다')}
+  };r.readAsText(f);
+});
+
+/* ---------- 푸시/서버 동기화 ---------- */
+function api(body){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j})})}
+function u8(b64u){var s=b64u.replace(/-/g,'+').replace(/_/g,'/');s+='='.repeat((4-s.length%4)%4);var b=atob(s),o=new Uint8Array(b.length);for(var i=0;i<b.length;i++)o[i]=b.charCodeAt(i);return o}
+var swReg=null;
+function registerSW(){if(!('serviceWorker'in navigator))return;navigator.serviceWorker.register('sw.js').then(function(r){swReg=r}).catch(function(){});navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='open-loan')showAlert(e.data.loanId)})}
+function getSub(create){
+  return navigator.serviceWorker.ready.then(function(reg){
+    return reg.pushManager.getSubscription().then(function(sub){
+      if(sub||!create)return sub;
+      return api({action:'key'}).then(function(k){return reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(k.publicKey)})})
+    })
+  })
+}
+var lastRunAt=null,serverErr=false,syncTimer;
+function doSync(){
+  if(!S.notify.enabled||!pushSupported())return Promise.resolve();
+  return getSub(false).then(function(sub){
+    if(!sub)return;
+    return api({action:'sync',deviceId:S.deviceId,subscription:sub.toJSON(),settings:{enabled:true,offsets:S.notify.offsets,hour:S.notify.hour,tz:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Seoul'},loans:S.loans.map(function(l){return{id:l.id,name:l.name,amount:l.payment||0,day:l.day,bank:l.bank||'',account:l.account||''}})}).then(function(r){serverErr=false;lastRunAt=r.lastRun;syncMsg='서버와 동기화됨'+(r.lastRun?' · 마지막 알림 점검 '+new Date(r.lastRun).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}):'');renderBanners()})
+  }).catch(function(){serverErr=true;syncMsg='알림 서버에 연결하지 못했습니다';renderBanners()})
+}
+function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(doSync,800)}
+$('swNotify').addEventListener('click',function(){
+  if(S.notify.enabled){
+    S.notify.enabled=false;save();renderSettings();
+    api({action:'remove',deviceId:S.deviceId}).catch(function(){});
+    getSub(false).then(function(s){if(s)s.unsubscribe()}).catch(function(){});
+    return
+  }
+  if(!pushSupported()||(isIOS()&&!isStandalone())){renderSettings();toast('먼저 홈 화면에 추가한 앱에서 열어 주세요');return}
+  Notification.requestPermission().then(function(p){
+    if(p!=='granted')throw new Error('권한');
+    return getSub(true)
+  }).then(function(){S.notify.enabled=true;save();renderSettings();return doSync()}).then(function(){renderSettings();toast('알림을 켰습니다')})
+  .catch(function(e){S.notify.enabled=false;save();renderSettings();toast(e&&e.message==='권한'?'알림 권한이 허용되지 않았습니다. 설정 앱에서 허용해 주세요':'알림을 켜지 못했습니다')});
+});
+$('btnTest').addEventListener('click',function(){
+  if(!S.notify.enabled){toast('먼저 알림을 켜 주세요');return}
+  doSync().then(function(){return api({action:'test',deviceId:S.deviceId})}).then(function(r){toast(r.ok?'테스트 알림을 보냈습니다':'발송 실패 ('+r.status+')')}).catch(function(){toast('테스트 알림을 보내지 못했습니다')});
+});
+
+/* ---------- 배너 ---------- */
+function renderBanners(){
+  var h='';
+  if(S.notify.enabled&&serverErr)h+='<div class="banner"><b>알림 서버 확인 필요</b>서버에 연결되지 않아 알림이 오지 않을 수 있습니다. Supabase 무료 프로젝트가 정지됐는지 확인해 주세요.</div>';
+  else if(S.notify.enabled&&lastRunAt&&Date.now()-Date.parse(lastRunAt)>48*3600e3)h+='<div class="banner"><b>알림 서버 확인 필요</b>이틀 넘게 알림 점검 기록이 없습니다.</div>';
+  if(S.loans.length&&(!S.lastBackup||Date.now()-Date.parse(S.lastBackup)>30*86400e3))h+='<div class="banner" style="background:#DBEAFE;color:#1E3A8A"><b>백업을 받아 두세요</b>설정 → 백업 파일 저장으로 기록을 보관할 수 있습니다.</div>';
+  $('banners').innerHTML=h;
+}
+
+/* ---------- 시작 ---------- */
+render();registerSW();
+if(S.notify.enabled)doSync();
+document.addEventListener('visibilitychange',function(){if(!document.hidden){render();if(S.notify.enabled)doSync()}});
+var q=new URLSearchParams(location.search);
+if(q.get('loan')){showAlert(q.get('loan'));history.replaceState(null,'',location.pathname)}
+})();
+</script>
+</body>
+</html>
